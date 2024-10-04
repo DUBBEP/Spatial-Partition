@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SpatialPartitionPattern
 {
@@ -10,7 +12,7 @@ namespace SpatialPartitionPattern
 
         public GameObject friendlyObj;
         public GameObject enemyObj;
-        public GameObject UpdateTimeText;
+        public TextMeshProUGUI UpdateTimeText;
 
         public Material enemyMaterial;
         public Material closestEnemyMaterial;
@@ -95,7 +97,7 @@ namespace SpatialPartitionPattern
             }
 
             float elapsedTime = (Time.realtimeSinceStartup - startTime) * 1000f;
-            UpdateTimeText.text = elapsedTime.ToString();
+            UpdateTimeText.text = "Update Time: " + elapsedTime.ToString() + "ms";
             Debug.Log(elapsedTime + "ms");
         }
 
