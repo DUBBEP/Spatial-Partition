@@ -11,6 +11,7 @@ namespace SpatialPartitionPattern
         float mapWidth;
         Grid grid;
 
+
         // Enemy constructor
         public Enemy(GameObject soldierObj, float mapWidth, Grid grid)
         {
@@ -18,6 +19,7 @@ namespace SpatialPartitionPattern
             this.soldierMeshRenderer = soldierObj.GetComponent<MeshRenderer>();
             this.mapWidth = mapWidth;
             this.grid = grid;
+            this.type = soldierType.enemy;
 
             // add this unit to the grid
             grid.Add(this);
@@ -43,10 +45,19 @@ namespace SpatialPartitionPattern
             oldPos = soldierTrans.position;
 
             if ((soldierTrans.position - currentTarget).magnitude < 1f)
-            {
+            {  
                 GetNewTarget();
             }
 
         }
+
+        void OnCollisionEnter(Collision collision)
+        {
+            Debug.Log("Collision Detected");
+            if (collision.gameObject.CompareTag("Friendly"));
+                PartitionController.instance.BreakApart(3, this);
+        }
+
+
     }
 }

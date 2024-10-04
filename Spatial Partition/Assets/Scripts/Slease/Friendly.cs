@@ -10,12 +10,12 @@ namespace SpatialPartitionPattern
         {
             this.soldierTrans = soldierObj.transform;
             this.walkSpeed = 2f;
+            this.type = soldierType.friendly;
         }
 
         // mvoe toward the closest enemy - will always move within its grid
         public override void Move(Soldier closestEnemy)
         {
-            targetSoldier = closestEnemy;
             soldierTrans.rotation = Quaternion.LookRotation(closestEnemy.soldierTrans.position - soldierTrans.position);
             soldierTrans.Translate(Vector3.forward * Time.deltaTime * walkSpeed);
         }

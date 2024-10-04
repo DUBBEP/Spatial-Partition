@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace SpatialPartitionPattern
 {
-    public class GameController : MonoBehaviour
+    public class PartitionController : MonoBehaviour
     {
         // depends on: Soldier, Grid, Enemy, Friendly
 
@@ -37,6 +37,10 @@ namespace SpatialPartitionPattern
         // The spatial partition grid
         Grid grid;
 
+        public static PartitionController instance;
+
+        void Awake() { instance = this; }
+
         // Start is called before the first frame update
         void Start()
         {
@@ -49,11 +53,13 @@ namespace SpatialPartitionPattern
                 GameObject newEnemy = Instantiate(enemyObj, randomPos, Quaternion.identity) as GameObject;
                 enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
                 newEnemy.transform.parent = enemyParent;
+                newEnemy.GetComponent<Rigidbody>().isKinematic = true;
 
                 randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
                 GameObject newFriendly = Instantiate(friendlyObj, randomPos, Quaternion.identity) as GameObject;
                 friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
                 newFriendly.transform.parent = friendlyParent;
+                newFriendly.GetComponent<Rigidbody>().isKinematic = true;
             }
 
             ToggleSpacialPartition();
@@ -132,6 +138,37 @@ namespace SpatialPartitionPattern
                 useSpatialParition = true;
 
             usingPatialPartition.text = "Using Spacial partition: " + useSpatialParition.ToString();
+        }
+
+        public void BreakApart(int numOfPieces, Soldier fragmentingSoldier)
+        {
+            // spawn three smaller enemy soldiers, send them flying in a random direction and destroy self
+            for (int i = 0; i < numOfPieces; ++i)
+            {
+                // instantiate object
+                GameObject soldierShard = SpawnSoldierFragment(fragmentingSoldier  );
+            }
+        }
+
+        GameObject SpawnSoldierFragment(Soldier soldier)
+        {
+            if (soldier.type == Soldier.soldierType.enemy)
+            {
+                GameObject newEnemy = Instantiate(enemyObj, soldier.soldierTrans.position, Quaternion.identity) as GameObject;
+                enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
+                newEnemy.transform.parent = enemyParent;
+                newEnemy.GetComponent<Rigidbody>().isKinematic = true;
+                return newEnemy;
+            }
+            else if (soldier.type == Soldier.soldierType.friendly)
+            {
+                GameObject newFriendly = Instantiate(friendlyObj, soldier.soldierTrans.position, Quaternion.identity) as GameObject;
+                friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
+                newFriendly.transform.parent = friendlyParent;
+                newFriendly.GetComponent<Rigidbody>().isKinematic = true;
+                return newFriendly;
+            }
+            return null;
         }
     }
 }

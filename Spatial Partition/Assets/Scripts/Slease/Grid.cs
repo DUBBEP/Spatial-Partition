@@ -65,6 +65,11 @@ namespace SpatialPartitionPattern
                 }
                 enemy = enemy.nextSoldier;
             }
+
+            if (closestSoldier == null)
+                return friendlySoldier.targetSoldier;
+
+            friendlySoldier.targetSoldier = closestSoldier;
             return closestSoldier;
         }
 

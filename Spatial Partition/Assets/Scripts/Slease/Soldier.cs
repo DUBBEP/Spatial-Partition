@@ -1,3 +1,4 @@
+using SpatialPartition.Grid;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,14 @@ namespace SpatialPartitionPattern
     // The soldier base class for enemies and friendlies
     public class Soldier
     {
+        public enum soldierType
+        {
+            enemy,
+            friendly
+        }
+
+        public soldierType type;
+
         public MeshRenderer soldierMeshRenderer;
         public Transform soldierTrans;
         protected float walkSpeed;
@@ -19,5 +28,9 @@ namespace SpatialPartitionPattern
 
         public virtual void Move() { }
         public virtual void Move(Soldier soldier) { }
+
+
     }
+
+
 }
