@@ -15,6 +15,7 @@ namespace SpatialPartitionPattern
         // connect soldiers in a doubly linked list so we can easily partition them in space
         public Soldier previousSoldier;
         public Soldier nextSoldier;
+        public Soldier targetSoldier;
 
         public virtual void Move() { }
         public virtual void Move(Soldier soldier) { }

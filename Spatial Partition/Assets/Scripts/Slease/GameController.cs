@@ -13,6 +13,7 @@ namespace SpatialPartitionPattern
         public GameObject friendlyObj;
         public GameObject enemyObj;
         public TextMeshProUGUI UpdateTimeText;
+        public TextMeshProUGUI usingPatialPartition;
 
         public Material enemyMaterial;
         public Material closestEnemyMaterial;
@@ -54,6 +55,8 @@ namespace SpatialPartitionPattern
                 friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
                 newFriendly.transform.parent = friendlyParent;
             }
+
+            ToggleSpacialPartition();
         }
 
         // Update is called once per frame
@@ -98,7 +101,7 @@ namespace SpatialPartitionPattern
 
             float elapsedTime = (Time.realtimeSinceStartup - startTime) * 1000f;
             UpdateTimeText.text = "Update Time: " + elapsedTime.ToString() + "ms";
-            Debug.Log(elapsedTime + "ms");
+            // Debug.Log(elapsedTime + "ms");
         }
 
         // TOUR STOP 03 - Find the closest enemy, slow version
@@ -117,7 +120,18 @@ namespace SpatialPartitionPattern
                     closestEnemy = enemySoldiers[i];
                 }
             }
+
             return closestEnemy;
+        }
+
+        public void ToggleSpacialPartition()
+        {
+            if (useSpatialParition)
+                useSpatialParition = false;
+            else
+                useSpatialParition = true;
+
+            usingPatialPartition.text = "Using Spacial partition: " + useSpatialParition.ToString();
         }
     }
 }
