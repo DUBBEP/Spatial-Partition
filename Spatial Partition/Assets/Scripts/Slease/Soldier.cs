@@ -18,7 +18,7 @@ namespace SpatialPartitionPattern
 
         public MeshRenderer soldierMeshRenderer;
         public Transform soldierTrans;
-        protected float walkSpeed;
+        public float walkSpeed;
 
         // TOUR STOP 05
         // connect soldiers in a doubly linked list so we can easily partition them in space

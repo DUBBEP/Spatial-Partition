@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SpatialPartitionPattern
 {
-    public class PartitionController : MonoBehaviour
+    public class GameController : MonoBehaviour
     {
         // depends on: Soldier, Grid, Enemy, Friendly
 
@@ -26,40 +27,51 @@ namespace SpatialPartitionPattern
 
         List<Soldier> closestEnemies = new List<Soldier>();
 
+        public float shatterForce;
+        public float torqueForce;
+
+        private int soldiersOnBoard;
+        public int SoldiersOnBoard {  get { return soldiersOnBoard; } }
+
+        [SerializeField]
+        private int soldierLimit;
+        public int SoldierLimit {  get { return soldierLimit; } }
+
         // Grid data
         float mapWidth = 50f;
         int cellSize = 10;
 
         // Number of soldiers on each team
-        public int numberOfSoldiers = 100;
-        public bool useSpatialParition = false;
+
+
+        public int soldiersToSpawn = 100;
+        public bool useSpatialParition = true;
 
         // The spatial partition grid
         Grid grid;
 
-        public static PartitionController instance;
+        public static GameController instance;
 
         void Awake() { instance = this; }
 
         // Start is called before the first frame update
         void Start()
         {
+            soldiersOnBoard = soldiersToSpawn * 2;
             grid = new Grid((int)mapWidth, cellSize);
 
-            for (int i = 0; i < numberOfSoldiers; i++)
+            for (int i = 0; i < soldiersToSpawn; i++)
             {
                 // add random enemies and friendlies and store them in a list
                 Vector3 randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
                 GameObject newEnemy = Instantiate(enemyObj, randomPos, Quaternion.identity) as GameObject;
                 enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
                 newEnemy.transform.parent = enemyParent;
-                newEnemy.GetComponent<Rigidbody>().isKinematic = true;
 
                 randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
                 GameObject newFriendly = Instantiate(friendlyObj, randomPos, Quaternion.identity) as GameObject;
                 friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
                 newFriendly.transform.parent = friendlyParent;
-                newFriendly.GetComponent<Rigidbody>().isKinematic = true;
             }
 
             ToggleSpacialPartition();
@@ -140,35 +152,77 @@ namespace SpatialPartitionPattern
             usingPatialPartition.text = "Using Spacial partition: " + useSpatialParition.ToString();
         }
 
-        public void BreakApart(int numOfPieces, Soldier fragmentingSoldier)
+        public void BreakApart(int numOfPieces, CollisionBehavior soldierObject)
         {
+            if (soldiersOnBoard >= soldierLimit)
+                return;
+
+            soldiersOnBoard += numOfPieces;
             // spawn three smaller enemy soldiers, send them flying in a random direction and destroy self
             for (int i = 0; i < numOfPieces; ++i)
             {
                 // instantiate object
-                GameObject soldierShard = SpawnSoldierFragment(fragmentingSoldier  );
+                GameObject soldierShard = SpawnSoldierFragment(soldierObject);
+                Rigidbody shardRb = soldierShard.GetComponent<Rigidbody>();
+
+                Debug.Log(new Vector3(Random.Range(-1f, 1f), Random.Range(0.5f, 0.7f), Random.Range(-1f, 1f)));
+                shardRb.AddForce(new Vector3(Random.Range(-1f, 1f), Random.Range(0.5f, 0.7f), Random.Range(-1f, 1f)) * shatterForce, ForceMode.Impulse);
+                shardRb.AddTorque(new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * torqueForce, ForceMode.Impulse);
             }
         }
 
-        GameObject SpawnSoldierFragment(Soldier soldier)
+        GameObject SpawnSoldierFragment(CollisionBehavior soldierObject)
         {
-            if (soldier.type == Soldier.soldierType.enemy)
+            if (soldierObject.type == Soldier.soldierType.enemy)
             {
-                GameObject newEnemy = Instantiate(enemyObj, soldier.soldierTrans.position, Quaternion.identity) as GameObject;
+                GameObject newEnemy = Instantiate(enemyObj, new Vector3(soldierObject.transform.position.x, soldierObject.transform.position.y + 0.5f, soldierObject.transform.position.z), Quaternion.identity) as GameObject;
                 enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
                 newEnemy.transform.parent = enemyParent;
-                newEnemy.GetComponent<Rigidbody>().isKinematic = true;
                 return newEnemy;
             }
-            else if (soldier.type == Soldier.soldierType.friendly)
+            else if (soldierObject.type == Soldier.soldierType.friendly)
             {
-                GameObject newFriendly = Instantiate(friendlyObj, soldier.soldierTrans.position, Quaternion.identity) as GameObject;
+                GameObject newFriendly = Instantiate(friendlyObj, new Vector3(soldierObject.transform.position.x, soldierObject.transform.position.y + 0.5f, soldierObject.transform.position.z), Quaternion.identity) as GameObject;
                 friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
                 newFriendly.transform.parent = friendlyParent;
-                newFriendly.GetComponent<Rigidbody>().isKinematic = true;
                 return newFriendly;
             }
             return null;
         }
+
+        public void RemoveSoldier(Transform soldierTransform, Soldier.soldierType type)
+        {
+            if (type == Soldier.soldierType.enemy)
+            {
+                Soldier soldier = GetSoldierInList(soldierTransform, enemySoldiers);
+
+                if (soldier == null)
+                    return;
+
+                enemySoldiers.Remove(soldier);
+                if (closestEnemies.Contains(soldier))
+                    closestEnemies.Remove(soldier);
+
+                grid.Remove(soldier);
+            }
+            else if (type == Soldier.soldierType.friendly)
+            {
+                Soldier soldier = GetSoldierInList(soldierTransform, friendlySoldiers);
+                friendlySoldiers.Remove(soldier);
+                grid.Remove(soldier);
+            }
+
+            soldierTransform.gameObject.SetActive(false);
+        }
+
+        Soldier GetSoldierInList(Transform soldierTransform, List<Soldier> list)
+        {
+            foreach (Soldier x in list)
+                if (x.soldierTrans == soldierTransform)
+                    return x;
+
+            return null;
+        }
     }
+
 }

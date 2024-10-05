@@ -90,14 +90,7 @@ namespace SpatialPartitionPattern
             }
 
             // unlink the soldier from its old cell
-            if (soldier.previousSoldier != null)
-            {
-                soldier.previousSoldier.nextSoldier = soldier.nextSoldier;
-            }
-            if (soldier.nextSoldier != null)
-            {
-                soldier.nextSoldier.previousSoldier = soldier.previousSoldier;
-            }
+            Remove(soldier);
 
             // If it's the head of a list, remove it
             if (cells[oldCellX, oldCellZ] == soldier)
@@ -107,6 +100,20 @@ namespace SpatialPartitionPattern
 
             // Add it to the grid at its new cell
             Add(soldier);
+        }
+
+        public void Remove(Soldier soldier)
+        {
+            if (soldier == null) return;
+
+            if (soldier.previousSoldier != null)
+            {
+                soldier.previousSoldier.nextSoldier = soldier.nextSoldier;
+            }
+            if (soldier.nextSoldier != null)
+            {
+                soldier.nextSoldier.previousSoldier = soldier.previousSoldier;
+            }
         }
     }
 }
