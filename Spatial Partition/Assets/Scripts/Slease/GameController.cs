@@ -1,9 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 namespace SpatialPartitionPattern
 {
@@ -15,6 +14,7 @@ namespace SpatialPartitionPattern
         public GameObject enemyObj;
         public TextMeshProUGUI UpdateTimeText;
         public TextMeshProUGUI usingPatialPartition;
+        public TextMeshProUGUI soldierlimitText;
 
         public Material enemyMaterial;
         public Material closestEnemyMaterial;
@@ -44,7 +44,7 @@ namespace SpatialPartitionPattern
         // Number of soldiers on each team
 
 
-        public int soldiersToSpawn = 100;
+        public int soldiersToSpawn;
         public bool useSpatialParition = true;
 
         // The spatial partition grid
@@ -57,24 +57,41 @@ namespace SpatialPartitionPattern
         // Start is called before the first frame update
         void Start()
         {
-            soldiersOnBoard = soldiersToSpawn * 2;
             grid = new Grid((int)mapWidth, cellSize);
-
-            for (int i = 0; i < soldiersToSpawn; i++)
-            {
-                // add random enemies and friendlies and store them in a list
-                Vector3 randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
-                GameObject newEnemy = Instantiate(enemyObj, randomPos, Quaternion.identity) as GameObject;
-                enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
-                newEnemy.transform.parent = enemyParent;
-
-                randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
-                GameObject newFriendly = Instantiate(friendlyObj, randomPos, Quaternion.identity) as GameObject;
-                friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
-                newFriendly.transform.parent = friendlyParent;
-            }
-
             ToggleSpacialPartition();
+            UpdateSoldierLimitText();
+        }
+
+        public void UpdateSoldierLimitText()
+        {
+            soldierlimitText.text = "Soldier Limit: " + soldierLimit;
+        }
+
+        public void ChangeSoldierLimit(int count)
+        {
+            soldierLimit += count;
+            UpdateSoldierLimitText();
+        }
+
+        public void ResetScene()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void SpawnSoldiers()
+        {
+            soldiersOnBoard = 2;
+
+            // add random enemies and friendlies and store them in a list
+            Vector3 randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
+            GameObject newEnemy = Instantiate(enemyObj, randomPos, Quaternion.identity) as GameObject;
+            enemySoldiers.Add(new Enemy(newEnemy, mapWidth, grid));
+            newEnemy.transform.parent = enemyParent;
+
+            randomPos = new Vector3(Random.Range(0f, mapWidth), 0.5f, Random.Range(0f, mapWidth));
+            GameObject newFriendly = Instantiate(friendlyObj, randomPos, Quaternion.identity) as GameObject;
+            friendlySoldiers.Add(new Friendly(newFriendly, mapWidth));
+            newFriendly.transform.parent = friendlyParent;
         }
 
         // Update is called once per frame
@@ -118,6 +135,7 @@ namespace SpatialPartitionPattern
             }
 
             float elapsedTime = (Time.realtimeSinceStartup - startTime) * 1000f;
+            elapsedTime = Mathf.Round(elapsedTime * 1000.0f) / 1000.0f;
             UpdateTimeText.text = "Update Time: " + elapsedTime.ToString() + "ms";
             // Debug.Log(elapsedTime + "ms");
         }
